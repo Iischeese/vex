@@ -6,8 +6,7 @@
 /*    Description:  IQ2 project                                               */
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
-#pragma region VEXcode Generated Robot Configuration
-// Make sure all required headers are included.
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -19,23 +18,10 @@
 
 using namespace vex;
 
-// Brain should be defined by default
+// Setup systems
+
 brain Brain;
 
-
-// START IQ MACROS
-#define waitUntil(condition)                                                   \
-  do {                                                                         \
-    wait(5, msec);                                                             \
-  } while (!(condition))
-
-#define repeat(iterations)                                                     \
-  for (int iterator = 0; iterator < iterations; iterator++)
-// END IQ MACROS
-
-
-// Robot configuration code.
-inertial BrainInertial = inertial();
 motor LeftDriveSmart = motor(PORT1, 2, false);
 motor RightDriveSmart = motor(PORT6, 2, true);
 drivetrain Drivetrain = drivetrain(LeftDriveSmart, RightDriveSmart, 200, 173, 76, mm, 1);
@@ -49,67 +35,63 @@ motor LiftMotorA = motor(PORT11, true);
 motor LiftMotorB = motor(PORT12, false);
 motor_group Lift = motor_group(LiftMotorA, LiftMotorB);
 
-
-
-
-// define variable for remote controller enable/disable
+// Drivetrain Controls
 bool RemoteControlCodeEnabled = true;
-// define variables used for controlling motors based on controller inputs
+
 bool DrivetrainLNeedsToBeStopped_Controller = true;
 bool DrivetrainRNeedsToBeStopped_Controller = true;
 
-// define a task that will handle monitoring inputs from Controller
-int rc_auto_loop_function_Controller() {
-  // process the controller input every 20 milliseconds
-  // update the motors based on the input values
-  while(true) {
-    if(RemoteControlCodeEnabled) {
-      
-      // calculate the drivetrain motor velocities from the controller joystick axies
-      // left = AxisA
-      // right = AxisD
+int rc_auto_loop_function_Controller()
+{
+
+  while (true)
+  {
+    if (RemoteControlCodeEnabled)
+    {
+
       int drivetrainLeftSideSpeed = Controller.AxisA.position();
       int drivetrainRightSideSpeed = Controller.AxisD.position();
-      
-      // check if the value is inside of the deadband range
-      if (drivetrainLeftSideSpeed < 5 && drivetrainLeftSideSpeed > -5) {
-        // check if the left motor has already been stopped
-        if (DrivetrainLNeedsToBeStopped_Controller) {
-          // stop the left drive motor
+
+      if (drivetrainLeftSideSpeed < 5 && drivetrainLeftSideSpeed > -5)
+      {
+
+        if (DrivetrainLNeedsToBeStopped_Controller)
+        {
+
           LeftDriveSmart.stop();
-          // tell the code that the left motor has been stopped
           DrivetrainLNeedsToBeStopped_Controller = false;
         }
-      } else {
-        // reset the toggle so that the deadband code knows to stop the left motor nexttime the input is in the deadband range
+      }
+      else
+      {
         DrivetrainLNeedsToBeStopped_Controller = true;
       }
-      // check if the value is inside of the deadband range
-      if (drivetrainRightSideSpeed < 5 && drivetrainRightSideSpeed > -5) {
-        // check if the right motor has already been stopped
-        if (DrivetrainRNeedsToBeStopped_Controller) {
-          // stop the right drive motor
+      if (drivetrainRightSideSpeed < 5 && drivetrainRightSideSpeed > -5)
+      {
+        if (DrivetrainRNeedsToBeStopped_Controller)
+        {
           RightDriveSmart.stop();
-          // tell the code that the right motor has been stopped
           DrivetrainRNeedsToBeStopped_Controller = false;
         }
-      } else {
-        // reset the toggle so that the deadband code knows to stop the right motor next time the input is in the deadband range
+      }
+      else
+      {
         DrivetrainRNeedsToBeStopped_Controller = true;
       }
-      
-      // only tell the left drive motor to spin if the values are not in the deadband range
-      if (DrivetrainLNeedsToBeStopped_Controller) {
+
+      if (DrivetrainLNeedsToBeStopped_Controller)
+      {
         LeftDriveSmart.setVelocity(drivetrainLeftSideSpeed, percent);
         LeftDriveSmart.spin(forward);
       }
-      // only tell the right drive motor to spin if the values are not in the deadband range
-      if (DrivetrainRNeedsToBeStopped_Controller) {
+
+      if (DrivetrainRNeedsToBeStopped_Controller)
+      {
         RightDriveSmart.setVelocity(drivetrainRightSideSpeed, percent);
         RightDriveSmart.spin(forward);
       }
     }
-    // wait before repeating the process
+
     wait(20, msec);
   }
   return 0;
@@ -117,45 +99,47 @@ int rc_auto_loop_function_Controller() {
 
 task rc_auto_loop_task_Controller(rc_auto_loop_function_Controller);
 
-#pragma endregion VEXcode Generated Robot Configuration
-
-// Include the IQ Library
 #include "vex.h"
-  
-// Allows for easier use of the VEX Library
-using namespace vex;
 
+using namespace vex;
 
 // Macro Controls
 
-void R_UP(){
+void R_UP()
+{
   Elevator.spin(forward);
 }
 
-void R_DOWN(){
+void R_DOWN()
+{
   Elevator.spin(reverse);
 }
 
-void L3(){
-    if(Controller.ButtonL3.pressing() && Controller.ButtonR3.pressing()){
-      Drivetrain.stop();
-      Elevator.stop();
-      Lift.stop();
+void L3()
+{
+  if (Controller.ButtonL3.pressing() && Controller.ButtonR3.pressing())
+  {
+    Drivetrain.stop();
+    Elevator.stop();
+    Lift.stop();
 
-      Brain.playSound(headlightsOff);
-    }
+    Brain.playSound(headlightsOff);
+  }
 }
 
-void L_DOWN() {
+void L_DOWN()
+{
   Lift.spin(forward);
 }
 
-void L_UP(){
+void L_UP()
+{
   Lift.spin(reverse);
 }
 
-void myCalibrate(){
-  Gyros.calibrate(calExtended); 
+void myCalibrate()
+{
+  Gyros.calibrate(calExtended);
 
   // Set Speeds
   Drivetrain.setDriveVelocity(100, percent);
@@ -165,15 +149,15 @@ void myCalibrate(){
 
   // Set Torque
   Elevator.setMaxTorque(100, percent);
-  Lift.setMaxTorque(100,percent);
+  Lift.setMaxTorque(100, percent);
 
   // Set Braking methods
   Drivetrain.setStopping(brake);
   Elevator.setStopping(coast);
-
 }
 
-void logo(){
+void logo()
+{
   Brain.Screen.clearScreen();
 
   Brain.Screen.setFont(prop30);
@@ -183,10 +167,19 @@ void logo(){
   Brain.Screen.newLine();
 
   Brain.Screen.setFont(mono20);
-  Brain.Screen.print("v.2.7.t");
+
+  /*
+  Build Number NN-TT-YYMMDD.AAA
+  N Name
+  T Type (auto manual)
+  YYMMDD year month date
+  AAA number 001,002,003 ect every time its built
+  */
+  Brain.Screen.print("RMML240223.002");
 }
 
-void setMacros(){
+void setMacros()
+{
   // Elevator
   Controller.ButtonRUp.pressed(R_UP);
   Controller.ButtonRDown.pressed(R_DOWN);
@@ -195,12 +188,13 @@ void setMacros(){
   Controller.ButtonL3.pressed(L3);
   Controller.ButtonR3.pressed(L3);
 
-  // Lift 
+  // Lift
   Controller.ButtonLDown.pressed(L_DOWN);
   Controller.ButtonLUp.pressed(L_UP);
 }
 
-int main() {
+int main()
+{
   myCalibrate();
   setMacros();
   Brain.playSound(headlightsOn);
